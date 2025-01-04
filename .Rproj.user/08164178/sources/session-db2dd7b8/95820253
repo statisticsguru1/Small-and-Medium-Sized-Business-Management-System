@@ -1,0 +1,26 @@
+{
+    "id": "95820253",
+    "path": "/cloud/project/Form-creation-modules/testfile.R",
+    "project_path": "Form-creation-modules/testfile.R",
+    "type": "r_source",
+    "hash": "3616611568",
+    "contents": "",
+    "dirty": false,
+    "created": 1735988914896.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "5,24",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1735988952,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1735988952614,
+    "read_only": false,
+    "read_only_alternatives": []
+}

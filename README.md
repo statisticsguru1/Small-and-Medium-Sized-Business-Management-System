@@ -73,4 +73,4 @@ Contributions are welcome! To contribute to this project:
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Contact 📧
-For any queries or issues, please contact **Festus Nzuma** at [your-email@example.com].
+For any queries or issues, please contact **Festus Nzuma** at mutindafestus27@gmail.com.

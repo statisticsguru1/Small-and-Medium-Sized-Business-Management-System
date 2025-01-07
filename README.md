@@ -33,23 +33,21 @@ To get started with this project, follow these steps:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/sme-management-system.git
+   git clone https://github.com/statisticsguru1/Small-and-Medium-Sized-Business-Management-System.git
    ```
 
 2. **Install dependencies**:
    - Ensure you have R and Shiny installed.
    - Install the necessary R packages:
      ```R
-     install.packages(c("shiny", "dplyr", "ggplot2"))
+     install.packages(c("shiny", "tidyverse", "bslib","bsicons"))
      ```
 
 3. **Run the Shiny app**:
-   ```R
-   shiny::runApp()
-   ```
+  The FormModule creation module can be tested by running ```app.R```  file and running
 
 4. **Access the system**:
-   - Navigate to `http://127.0.0.1:8000/` in your browser.
+   - You might need to see the repository with the market analysis module:https://github.com/statisticsguru1/Assocs
 
 ## Contribution 🤝
 Contributions are welcome! To contribute to this project:

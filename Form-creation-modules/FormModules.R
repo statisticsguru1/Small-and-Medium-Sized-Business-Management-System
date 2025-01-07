@@ -15,20 +15,29 @@ createFieldUI <- function(id) {
                                                       tooltip(bs_icon("info-circle"),
                                                               "The type of data you want users to input",
                                                               placement = "right")),
-                              choices = c("text", "number", "date","range", "binary","multiple choice", "file", "action")),
+                              choices = c("text", "number", "date","range", "binary","multiple choice", "file", "action","password","currency")),
                   uiOutput(ns("specific_input")),
                   uiOutput(ns("inputparams"))
                   
-                  )
+                  ),
                 ),
+    card(
+      fill=F,
+      card_header("Text Input Preview",
+                  actionButton(ns("save_field"),"Save this input"),
+                  class = "d-flex justify-content-between"),
     uiOutput(ns("chosen_input"))
+    ),
+    tags$hr(),
+    verbatimTextOutput(ns("fields"))
+    
   )
 
 }
 
 # Define the create field submodule server logic
 
-createFieldServer <- function(id, fields) {
+createFieldServer <- function(id,section_name,fields,elementid=NULL) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
@@ -70,14 +79,14 @@ createFieldServer <- function(id, fields) {
                                                                 tooltip(
                                                                   bs_icon("info-circle"),
                                                                   "Data input method",
-                                                                  placement = "right")), choices = c("fileInput")),
+                                                                  placement = "right")), choices = c("fileInput","imageInput")),
                
                "action" = selectInput(ns("specific_type"),tagList(paste("Input Method"),
                                                                   tooltip(
                                                                     bs_icon("info-circle"),
                                                                     "Data input method",
                                                                     placement = "right")), choices = c("actionButton", "actionLink")),
-               "password" = selectInput(ns("specific_type"),tagList(paste("Input Method"),
+               "passwordInput" = selectInput(ns("specific_type"),tagList(paste("Input Method"),
                                                                     tooltip(
                                                                       bs_icon("info-circle"),
                                                                       "Data input method",
@@ -717,20 +726,176 @@ createFieldServer <- function(id, fields) {
                  checkboxInput(ns("create"), "create choices",value = T),
                  numericInput(ns("maxitems"),"maximum items",value = Inf),
                ),
-               
-               
-
+               "radioButtons" = tagList(
+                 strong("radioButtons input parameters"),
+                 textInput(ns("fieldlabel"),
+                           tagList(paste("Field Label"),
+                                   tooltip(
+                                     bsicons::bs_icon("info-circle"),
+                                     "Your field name/field label",
+                                     placement = "right"))),
+                 textInput(ns("choices"),
+                           tagList(paste("choices"),
+                                   tooltip(
+                                     bsicons::bs_icon("info-circle"),
+                                     "Choice labels, with their corresponding labels,
+                                     seperate using ','or ';'.",
+                                     placement = "right")),
+                           value = "Choice1,Choice2",
+                           placeholder="Choice1,Choice2,..."),
+                 checkboxInput(ns("inline"),
+                               tagList(paste("inline"),
+                                       tooltip(
+                                         bsicons::bs_icon("info-circle"),
+                                         "If TRUE, render the choices inline (i.e. horizontally)",
+                                         placement = "right")),
+                               value=F
+                               
+                 )
+               ),
                "checkboxGroupInput" = tagList(
-                 textInput(ns("choices"), "Choices (comma-separated)")
-               ),
-               "checkboxInput" = tagList(),
-               "fileInput" = tagList(),
+                 strong("radioButtons input parameters"),
+                 textInput(ns("fieldlabel"),
+                           tagList(paste("Field Label"),
+                                   tooltip(
+                                     bsicons::bs_icon("info-circle"),
+                                     "Your field name/field label",
+                                     placement = "right"))),
+                 textInput(ns("choices"),
+                           tagList(paste("choices"),
+                                   tooltip(
+                                     bsicons::bs_icon("info-circle"),
+                                     "Choice labels, with their corresponding labels,
+                                     seperate using ','or ';'.eg Choice1=choice1,
+                                     the first is the label the second is the choice",
+                                     placement = "right")),
+                           value = "Choice1,Choice2",
+                           placeholder="Choice1,Choice2,..."),
+                 checkboxInput(ns("inline"),
+                               tagList(paste("inline"),
+                                       tooltip(
+                                         bsicons::bs_icon("info-circle"),
+                                         "If TRUE, render the choices inline (i.e. horizontally)",
+                                         placement = "right"))
+                               
+                 ),
+                 textInput(ns("width"),
+                           tagList(paste("width"),
+                                   tooltip(
+                                     bsicons::bs_icon("info-circle"),
+                                     "The width of the input, e.g. '400px', or '100%';",
+                                     placement = "right")),value="400px")
+                 
+               )
+               ,
+               "fileInput" = tagList(
+                 strong("fileInput input parameters"),
+                 textInput(ns("fieldlabel"),
+                           tagList(paste("Field Label"),
+                                   tooltip(
+                                     bsicons::bs_icon("info-circle"),
+                                     "Your field name/field label",
+                                     placement = "right"))),
+                 checkboxInput(ns("multiple"), "Are multiple uploads allowed",value = T),
+                 textInput(ns("accept"),
+                           tagList(paste("allowed file types"),
+                                   tooltip(
+                                     bsicons::bs_icon("info-circle"),
+                                     "This can be\n
+                                     1) A case insensitive extension like .csv or .rds.\n
+                                     2) A valid MIME type, like text/plain or application/pdf
+                                     3) One of ⁠audio/*⁠, ⁠video/*⁠, or ⁠image/*⁠ meaning any audio, video, or image type, respectively. ",
+                                     placement = "right"))),
+                 textInput(ns("width"),
+                           tagList(paste("width"),
+                                   tooltip(
+                                     bsicons::bs_icon("info-circle"),
+                                     "The width of the input, e.g. '400px', or '100%';",
+                                     placement = "right")),value="400px"),
+                 textInput(ns("buttonLabel"),
+                           tagList(paste("buttonLabel"),
+                                   tooltip(
+                                     bsicons::bs_icon("info-circle"),
+                                     "The label used on the button. Can be text or an HTML tag object",
+                                     placement = "right")),value="Browse..."),
+                 textInput(ns("placeholder"),"select a placeholder",value="No file selected"),
+                 textInput(ns("capture"),
+                           tagList(paste("capture"),
+                                   tooltip(
+                                     bsicons::bs_icon("info-circle"),
+                                     'What source to use for capturing image, audio or video data. This attribute facilitates user access to a device\'s media capture mechanism, such as a camera, or microphone, from within a file upload control.
+                                     A value of user indicates that the user-facing camera and/or microphone should be used. A value of environment specifies that the outward-facing camera and/or microphone should be used.
+                                     By default on most phones, this will accept still photos or video. For still photos only, also use accept="image/*". For video only, use accept="video/*"',
+                                     placement = "right")),value="")),
                "actionButton" = tagList(
-                 textInput(ns("button_icon"), "Icon (optional)")
+                 strong("actionButton input parameters"),
+                 textInput(ns("fieldlabel"),
+                           tagList(paste("Field Label"),
+                                   tooltip(
+                                     bsicons::bs_icon("info-circle"),
+                                     "Your field name/field label",
+                                     placement = "right")),value="submit"),
+                 textInput(ns("button_icon"),
+                           tagList(paste("button_icon"),
+                                   tooltip(
+                                     bsicons::bs_icon("info-circle"),
+                                     "Your field name/field label",
+                                     placement = "right")),
+                           value=NULL
                ),
+               textInput(ns("width"),
+                         tagList(paste("width"),
+                                 tooltip(
+                                   bsicons::bs_icon("info-circle"),
+                                   "The width of the input, e.g. '400px', or '100%';",
+                                   placement = "right")),value="400px")),
                "actionLink" = tagList(
-                 textInput(ns("link_icon"), "Icon (optional)")
-               ),
+                 strong("actionButton input parameters"),
+                 textInput(ns("fieldlabel"),
+                           tagList(paste("Field Label"),
+                                   tooltip(
+                                     bsicons::bs_icon("info-circle"),
+                                     "Your field name/field label",
+                                     placement = "right")),value="submit"),
+                 textInput(ns("button_icon"),
+                           tagList(paste("button_icon"),
+                                   tooltip(
+                                     bsicons::bs_icon("info-circle"),
+                                     "Your field name/field label",
+                                     placement = "right")),
+                           value=NULL
+                 )),
+               "passwordInput" = tagList(
+                 strong("actionButton input parameters"),
+                 textInput(ns("fieldlabel"),
+                           tagList(paste("Field Label"),
+                                   tooltip(
+                                     bsicons::bs_icon("info-circle"),
+                                     "Your field name/field label",
+                                     placement = "right")),value=""),
+                 textInput(ns("value"),
+                           tagList(paste("value"),
+                                   tooltip(
+                                     bsicons::bs_icon("info-circle"),
+                                     "Default pass",
+                                     placement = "right")),
+                           value=NULL
+                 ),
+                 textInput(ns("width"),
+                           tagList(paste("width"),
+                                   tooltip(
+                                     bsicons::bs_icon("info-circle"),
+                                     "The width of the input, e.g. '400px', or '100%';",
+                                     placement = "right")),value="400px"),
+                 textInput(ns("placeholder"),
+                           tagList(paste("placeholder"),
+                                   tooltip(
+                                     bsicons::bs_icon("info-circle"),
+                                     "A character string giving the user a hint as to what can be entered into the control. Internet Explorer 8 and 9 do not support this option.",
+                                     placement = "right")),value="Enter password"),
+                 
+                 
+                 ),
                NULL
         )
         
@@ -738,27 +903,15 @@ createFieldServer <- function(id, fields) {
 
       output$chosen_input <- renderUI({
         switch(input$specific_type,
-               "textInput" =card(
-                 fill=T,
-                 card_header("Text Input Preview",
-                             actionButton("add_input","Save this input"),
-                             class = "d-flex justify-content-between"),
-                 tagList(
+               "textInput" =tagList(
                  textInput(ns("id"),
                            label=input$fieldlabel,
                            value=input$value,
                            width=input$width,
                            placeholder=input$placeholder
                  )
-               )
                ),
-               "textAreaInput" =card(
-                 fill=T,
-                 card_header("Text Input Preview",
-                             actionButton("add_input","Save this input"),
-                             class = "d-flex justify-content-between"),
-                 
-                 tagList(
+               "textAreaInput" =tagList(
                  textAreaInput(ns("id"),
                                label=input$fieldlabel,
                                value=input$value,
@@ -768,37 +921,27 @@ createFieldServer <- function(id, fields) {
                                rows=input$rows,
                                placeholder=input$placeholder,
                                resize=input$resize)
-               )),
+               ),
                "numericInput" ={
-                  req(input$min,input$max,input$value,input$step) 
-                 card(
-                 fill=T,
-                 card_header("Numeric Input Preview",
-                             actionButton("add_input","Save this input"),
-                             class = "d-flex justify-content-between"),
+                 req(input$min,input$max,input$value,input$step) 
                  tagList(
-                 numericInput(ns("id"),
-                              label=input$fieldlabel,
-                              value=as.numeric(input$value),
-                              max=as.numeric(input$max),
-                              min=as.numeric(input$min),
-                              step=as.numeric(input$step),
-                              width=input$width)
-               ))},
+                   numericInput(ns("id"),
+                                label=input$fieldlabel,
+                                value=as.numeric(input$value),
+                                max=as.numeric(input$max),
+                                min=as.numeric(input$min),
+                                step=as.numeric(input$step),
+                                width=input$width)
+                 )},
                "sliderInput" ={
                  req(input$min,input$max,input$value,input$step)
-                 card(
-                 fill=T,
-                 card_header("Slider Input Preview",
-                             actionButton("add_input","Save this input"),
-                             class = "d-flex justify-content-between"),
                  tagList(
                    sliderInput(ns("id"),
-                                label=input$fieldlabel,
-                                value=input$value,
-                                max=input$max,
-                                min=input$min,
-                                step=input$step,
+                               label=input$fieldlabel,
+                               value=input$value,
+                               max=input$max,
+                               min=input$min,
+                               step=input$step,
                                #round=input$round,
                                #ticks=input$ticks,
                                width=input$width,
@@ -806,123 +949,93 @@ createFieldServer <- function(id, fields) {
                                pre=input$pre,
                                post=input$post,
                                animate=animationOptions(10)
-                              )
-                 ))
+                   ))
                },
                "dateslider" ={
                  req(input$min,input$max,input$value,input$step)
-                 print(input$value)
-                 card(
-                   fill=T,
-                   card_header("Slider Input Preview",
-                               actionButton("add_input","Save this input"),
-                               class = "d-flex justify-content-between"),
-                   tagList(
-                     sliderInput(ns("id"),
-                                 label=input$fieldlabel,
-                                 value=as.Date(input$value),
-                                 max=as.Date(input$max),
-                                 min=as.Date(input$min),
-                                 ticks = TRUE,
-                                 step=input$step,
-                                 width=input$width,
-                                 pre=input$pre,
-                                 post=input$post,
-                                 animate=animationOptions(10)
-                     )
+                 tagList(
+                   sliderInput(ns("id"),
+                               label=input$fieldlabel,
+                               value=as.Date(input$value),
+                               max=as.Date(input$max),
+                               min=as.Date(input$min),
+                               ticks = TRUE,
+                               step=input$step,
+                               width=input$width,
+                               pre=input$pre,
+                               post=input$post,
+                               animate=animationOptions(10)
                    ))
                },
                "dateInput"={
                  req(input$value,input$max,input$min,input$format,input$startview,input$weekstart)
-                 card(
-                   fill=T,
-                   card_header("Date Input Preview",
-                               actionButton("add_input","Save this input"),
-                               class = "d-flex justify-content-between"),
-                   tagList(
-                     dateInput(ns("id"),
-                                 label=input$fieldlabel,
-                                 value=input$value,
-                                 max=input$max,
-                                 min=input$min,
-                                 format=input$format,
-                                 startview=input$startview,
-                                 weekstart=input$weekstart,
-                                 language=input$language,
-                                 width=input$width,
-                                 #autoclose=input$autoclose,
-                                 datesdisabled=as.Date(strsplit(input$datesdisabled,";")[[1]]),
-                                 daysofweekdisabled=as.numeric(strsplit(input$daysofweekdisabled,",")[[1]])
-                     )
+                 tagList(
+                   dateInput(ns("id"),
+                             label=input$fieldlabel,
+                             value=input$value,
+                             max=input$max,
+                             min=input$min,
+                             format=input$format,
+                             startview=input$startview,
+                             weekstart=input$weekstart,
+                             language=input$language,
+                             width=input$width,
+                             #autoclose=input$autoclose,
+                             datesdisabled=as.Date(strsplit(input$datesdisabled,";")[[1]]),
+                             daysofweekdisabled=as.numeric(strsplit(input$daysofweekdisabled,",")[[1]])
                    ))
                },
                "numeric range" ={
                  req(input$min,input$max,input$lowervalue,input$uppervalue,input$step)
-                 card(
-                   fill=T,
-                   card_header("Numeric Input Preview",
-                               actionButton("add_input","Save this input"),
-                               class = "d-flex justify-content-between"),
-                   tagList(
-                     sliderInput(ns("id"),
-                                 label=input$fieldlabel,
-                                 value=c(input$lowervalue,input$uppervalue),
-                                 max=input$max,
-                                 min=input$min,
-                                 step=input$step,
-                                 #round=input$round,
-                                 #ticks=input$ticks,
-                                 width=input$width,
-                                 sep=input$sep,
-                                 pre=input$pre,
-                                 post=input$post,
-                                 animate=animationOptions(10)
-                     )
+                 tagList(
+                   sliderInput(ns("id"),
+                               label=input$fieldlabel,
+                               value=c(input$lowervalue,input$uppervalue),
+                               max=input$max,
+                               min=input$min,
+                               step=input$step,
+                               #round=input$round,
+                               #ticks=input$ticks,
+                               width=input$width,
+                               sep=input$sep,
+                               pre=input$pre,
+                               post=input$post,
+                               animate=animationOptions(10)
                    ))
                },
                "date range" ={
                  req(input$min,input$max,input$lowervalue,input$uppervalue,input$step)
-                 card(
-                   fill=T,
-                   card_header("Date Input Preview",
-                               actionButton("add_input","Save this input"),
-                               class = "d-flex justify-content-between"),
-                   tagList(
-                     sliderInput(ns("id"),
-                                 label=input$fieldlabel,
-                                 value=c(as.Date(input$lowervalue),as.Date(input$uppervalue)),
-                                 max=as.Date(input$max),
-                                 min=as.Date(input$min),
-                                 step=input$step,
-                                 width=input$width,
-                                 pre=input$pre,
-                                 post=input$post,
-                                 animate=animationOptions(10)
-                     )
-                   ))
+                 tagList(
+                   sliderInput(ns("id"),
+                               label=input$fieldlabel,
+                               value=c(as.Date(input$lowervalue),as.Date(input$uppervalue)),
+                               max=as.Date(input$max),
+                               min=as.Date(input$min),
+                               step=input$step,
+                               width=input$width,
+                               pre=input$pre,
+                               post=input$post,
+                               animate=animationOptions(10)
+                   )
+                 )
                },
                "dateRangeInput"={
                  req(input$max,input$min,input$format,input$startview,input$weekstart)
-                 card(
-                   fill=T,
-                   card_header("Date Input Preview",
-                               actionButton("add_input","Save this input"),
-                               class = "d-flex justify-content-between"),
-                   tagList(
-                     dateRangeInput(ns("id"),
-                               label=input$fieldlabel,
-                               start=as.Date(input$start),
-                               end=as.Date(input$end),
-                               max=as.Date(input$max),
-                               min=as.Date(input$min),
-                               format=input$format,
-                               startview=input$startview,
-                               weekstart=input$weekstart,
-                               language=input$language,
-                               width=input$width,
-                               #autoclose=input$autoclose
-                               )
-                   ))
+                 tagList(
+                   dateRangeInput(ns("id"),
+                                  label=input$fieldlabel,
+                                  start=as.Date(input$start),
+                                  end=as.Date(input$end),
+                                  max=as.Date(input$max),
+                                  min=as.Date(input$min),
+                                  format=input$format,
+                                  startview=input$startview,
+                                  weekstart=input$weekstart,
+                                  language=input$language,
+                                  width=input$width,
+                                  #autoclose=input$autoclose
+                   )
+                 )
                },
                "binaryradioButtons"={
                  req(input$choices)
@@ -931,111 +1044,343 @@ createFieldServer <- function(id, fields) {
                  # Extract values and names
                  values <- sapply(split_vec, `[`, 2)  # Get the second part (values)
                  names(values) <- sapply(split_vec, `[`, 1)  # Set the first part as names
-                 
-                 card(
-                   fill=T,
-                   card_header("Binary Input button Preview",
-                               actionButton("add_input","Save this input"),
-                               class = "d-flex justify-content-between"),
-                   tagList(
-                     radioButtons(ns("id"),
-                                    label=input$fieldlabel,
-                                    choices=values,
-                                    inline=input$inline,
-                                    width=input$width
-                     )
+                 tagList(
+                   radioButtons(ns("id"),
+                                label=input$fieldlabel,
+                                choices=values,
+                                inline=input$inline,
+                                width=input$width
                    ))
                },
                "checkboxInput"={
                  req(input$value)
-                 card(
-                   fill=T,
-                   card_header("checkbox Input Preview",
-                               actionButton("add_input","Save this input"),
-                               class = "d-flex justify-content-between"),
-                   tagList(
-                     checkboxInput(ns("id"),
-                                    label=input$fieldlabel,
-                                    value= base::as.logical(input$value),
-                                    width=input$width
-                     )
+                 tagList(
+                   checkboxInput(ns("id"),
+                                 label=input$fieldlabel,
+                                 value= base::as.logical(input$value),
+                                 width=input$width
                    ))
                },
                "selectInput"={
                  #req(input$choices)
-                 card(
-                   fill=T,
-                   min_height='600px',
-                   card_header("Select Input Preview",
-                               actionButton("add_input","Save this input"),
-                               class = "d-flex justify-content-between"),
-                   tagList(
-                     selectInput(ns("id"),
-                                   label=input$fieldlabel,
-                                   #value= base::as.logical(input$value),
-                                   width=input$width,
-                                   choices = strsplit(input$choices, "[,;]")[[1]],
-                                   multiple=F,
-                                 selectize=T
-                                 )
+                 tagList(
+                   selectInput(ns("id"),
+                               label=input$fieldlabel,
+                               #value= base::as.logical(input$value),
+                               width=input$width,
+                               choices = strsplit(input$choices, "[,;]")[[1]],
+                               multiple=F,
+                               selectize=T
                    ))
                },
                "selectizeInput"={
                  #req(!is.null(input$choices))
-                 card(
-                   fill=T,
-                   min_height='600px',
-                   card_header("Selectize Input Preview",
-                               actionButton("add_input","Save this input"),
-                               class = "d-flex justify-content-between"),
-                   tagList(
-                     selectizeInput(ns("id"),
-                                 label=input$fieldlabel,
-                                 #selected= input$value,
-                                 width=input$width,
-                                 choices = strsplit(input$choices, "[,;]")[[1]],
-                                 multiple=input$multiple,
-                                 #selectize=T,
-                                 options = list(placeholder = input$placeholder,
-                                                maxOptions=Inf,
-                                                create=input$create,
-                                                maxItems = input$maxitems)
-                                 )
+                 tagList(
+                   selectizeInput(ns("id"),
+                                  label=input$fieldlabel,
+                                  #selected= input$value,
+                                  width=input$width,
+                                  choices = strsplit(input$choices, "[,;]")[[1]],
+                                  multiple=input$multiple,
+                                  #selectize=T,
+                                  options = list(placeholder = input$placeholder,
+                                                 maxOptions=Inf,
+                                                 create=input$create,
+                                                 maxItems = input$maxitems)
+                   )
+                 )
+               },
+               "radioButtons"={
+                 req(input$choices)
+                 split_vec<-strsplit(strsplit(input$choices, "[,;]")[[1]],"=")
+                 
+                 # Extract values and names
+                 values <- sapply(split_vec, `[`, 2)  # Get the second part (values)
+                 names(values) <- sapply(split_vec, `[`, 1)  # Set the first part as names
+                 tagList(
+                   radioButtons(ns("id"),
+                                label=input$fieldlabel,
+                                choices=values,
+                                inline=input$inline,
+                                width=input$width
+                   )
+                 )
+               },
+               "checkboxGroupInput"={
+                 req(input$choices)
+                 split_vec<-strsplit(strsplit(input$choices, "[,;]")[[1]],"=")
+                 
+                 # Extract values and names
+                 values <- sapply(split_vec, `[`, 2)  # Get the second part (values)
+                 names(values) <- sapply(split_vec, `[`, 1)  # Set the first part as names
+                 
+                 tagList(
+                   checkboxGroupInput(ns("id"),
+                                      label=input$fieldlabel,
+                                      choices=values,
+                                      inline=input$inline,
+                                      width=input$width
                    ))
-               }
-               
-               
+               },
+               "fileInput"={
+                 #req(input$choices)
+                 tagList(
+                   fileInput(ns("id"),
+                             label=input$fieldlabel,
+                             width=input$width,
+                             accept = strsplit(input$accept, "[,;]")[[1]],
+                             multiple=input$multiple,
+                             buttonLabel=input$buttonLabel,
+                             placeholder=input$placeholder,
+                             capture = input$capture         
+                   ))
+               },
+               "actionButton"={
+                 #req(input$choices)
+                 tagList(
+                   actionButton(ns("id"),
+                                label=input$fieldlabel,
+                                icon=shiny::icon(input$button_icon),
+                                width=input$width,
+                   ))
+               },
+               "actionLink"={
+                 #req(input$choices)
+                 tagList(
+                   actionLink(ns("id"),
+                              label=input$fieldlabel,
+                              icon=shiny::icon(input$button_icon)
+                   ))
+               },
+               "passwordInput"={
+                 #req(input$choices)
+                 tagList(
+                   actionButton(ns("id"),
+                                label=input$fieldlabel,
+                                value=input$value,
+                                width=input$width,
+                                placeholder=input$placeholder
+                   ))
+               },
         )
       })
       
     })
+    ship_vals<-reactiveVal(NULL)
     
-    
-    observeEvent(input$add_field, {
+    observeEvent(input$save_field, {
       new_field <- list(
-        label = input$label,
         data_type = input$data_type,
-        specific_type = input$specific_type,
+        specific_type = ifelse(input$specific_type%in% c("dateslider","numeric range","date range"),"sliderInput",ifelse(input$specific_type=="binaryradioButtons","radioButtons",input$specific_type)),
         params = switch(input$specific_type,
-                        "textInput" = list(placeholder = input$placeholder, min_chars = input$min_chars, max_chars = input$max_chars),
-                        "textAreaInput" = list(placeholder = input$placeholder, rows = input$rows),
-                        "passwordInput" = list(),
-                        "numericInput" = list(min_value = input$min_value, max_value = input$max_value, step = input$step),
-                        "sliderInput" = list(min_value = input$min_value, max_value = input$max_value, step = input$step, value = input$value),
-                        "dateInput" = list(min_date = input$min_date, max_date = input$max_date),
-                        "dateRangeInput" = list(start_date = input$start_date, end_date = input$end_date),
-                        "selectInput" = list(choices = strsplit(input$choices, ",")[[1]], multiple = input$multiple),
-                        "radioButtons" = list(choices = strsplit(input$choices, ",")[[1]]),
-                        "checkboxGroupInput" = list(choices = strsplit(input$choices, ",")[[1]]),
-                        "checkboxInput" = list(),
-                        "fileInput" = list(),
-                        "actionButton" = list(icon = input$button_icon),
-                        "actionLink" = list(icon = input$link_icon),
+                        "textInput" = list(label=input$fieldlabel,
+                                           value=input$value,
+                                           width=input$width,
+                                           placeholder=input$placeholder),
+                        "textAreaInput" = list(label=input$fieldlabel,
+                                               value=input$value,
+                                               width=input$width,
+                                               height=input$height,
+                                               cols=input$cols,
+                                               rows=input$rows,
+                                               placeholder=input$placeholder,
+                                               resize=input$resize),
+                        "numericInput" = list(label=input$fieldlabel,
+                                              value=as.numeric(input$value),
+                                              max=as.numeric(input$max),
+                                              min=as.numeric(input$min),
+                                              step=as.numeric(input$step),
+                                              width=input$width),
+                        "sliderInput" = list(
+                          label=input$fieldlabel,
+                          value=input$value,
+                          max=input$max,
+                          min=input$min,
+                          step=input$step,
+                          #round=input$round,
+                          #ticks=input$ticks,
+                          width=input$width,
+                          sep=input$sep,
+                          pre=input$pre,
+                          post=input$post,
+                          animate=animationOptions(10)
+                        ),
+                        
+                        "dateslider" = list(
+                          label=input$fieldlabel,
+                          value=as.Date(input$value),
+                          max=as.Date(input$max),
+                          min=as.Date(input$min),
+                          ticks = TRUE,
+                          step=input$step,
+                          width=input$width,
+                          pre=input$pre,
+                          post=input$post,
+                          animate=animationOptions(10)
+                        ),
+
+                        "dateInput" = list(
+                          label=input$fieldlabel,
+                          value=input$value,
+                          max=input$max,
+                          min=input$min,
+                          format=input$format,
+                          startview=input$startview,
+                          weekstart=input$weekstart,
+                          language=input$language,
+                          width=input$width,
+                          #autoclose=input$autoclose,
+                          datesdisabled=as.Date(strsplit(input$datesdisabled,";")[[1]]),
+                          daysofweekdisabled=as.numeric(strsplit(input$daysofweekdisabled,",")[[1]])
+                        ),
+                        
+                        "numeric range"=list(
+                          label=input$fieldlabel,
+                          value=c(input$lowervalue,input$uppervalue),
+                          max=input$max,
+                          min=input$min,
+                          step=input$step,
+                          #round=input$round,
+                          #ticks=input$ticks,
+                          width=input$width,
+                          sep=input$sep,
+                          pre=input$pre,
+                          post=input$post,
+                          animate=animationOptions(10)
+                        ),
+                        "date range"=list(
+                          label=input$fieldlabel,
+                          value=c(as.Date(input$lowervalue),as.Date(input$uppervalue)),
+                          max=as.Date(input$max),
+                          min=as.Date(input$min),
+                          step=input$step,
+                          width=input$width,
+                          pre=input$pre,
+                          post=input$post,
+                          animate=animationOptions(10)
+                        ),
+                        "dateRangeInput" = list(
+                          label=input$fieldlabel,
+                          start=as.Date(input$start),
+                          end=as.Date(input$end),
+                          max=as.Date(input$max),
+                          min=as.Date(input$min),
+                          format=input$format,
+                          startview=input$startview,
+                          weekstart=input$weekstart,
+                          language=input$language,
+                          width=input$width,
+                          #autoclose=input$autoclose
+                        ),
+                        "binaryradioButtons"={
+                          req(input$choices)
+                          split_vec<-strsplit(strsplit(input$choices, "[,;]")[[1]][1:2],"=")
+                          
+                          # Extract values and names
+                          values <- sapply(split_vec, `[`, 2)  # Get the second part (values)
+                          names(values) <- sapply(split_vec, `[`, 1)  # Set the first part as names
+                          
+                          list(
+                          label=input$fieldlabel,
+                          choices=values,
+                          inline=input$inline,
+                          width=input$width
+                          )
+                        },
+                        "checkboxInput" = list(
+                          label=input$fieldlabel,
+                          value= base::as.logical(input$value),
+                          width=input$width
+                        ),
+                        "selectInput" = list(
+                          label=input$fieldlabel,
+                          #value= base::as.logical(input$value),
+                          width=input$width,
+                          choices = strsplit(input$choices, "[,;]")[[1]],
+                          multiple=F,
+                          selectize=T
+                        ),
+                        "selectizeInput"=list(
+                          label=input$fieldlabel,
+                          #selected= input$value,
+                          width=input$width,
+                          choices = strsplit(input$choices, "[,;]")[[1]],
+                          multiple=input$multiple,
+                          #selectize=T,
+                          options = list(placeholder = input$placeholder,
+                                         maxOptions=Inf,
+                                         create=input$create,
+                                         maxItems = input$maxitems)
+                        ),
+                        "radioButtons" = {
+                          req(input$choices)
+                          split_vec<-strsplit(strsplit(input$choices, "[,;]")[[1]],"=")
+                          
+                          # Extract values and names
+                          values <- sapply(split_vec, `[`, 2)  # Get the second part (values)
+                          names(values) <- sapply(split_vec, `[`, 1)  # Set the first part as names
+                          list(
+                          label=input$fieldlabel,
+                          choices=values,
+                          inline=input$inline,
+                          width=input$width
+                        )
+                          },
+                        "checkboxGroupInput" = {
+                          split_vec<-strsplit(strsplit(input$choices, "[,;]")[[1]],"=")
+                          
+                          # Extract values and names
+                          values <- sapply(split_vec, `[`, 2)  # Get the second part (values)
+                          names(values) <- sapply(split_vec, `[`, 1)  # Set the first part as names
+                          list(
+                          label=input$fieldlabel,
+                          choices=values,
+                          inline=input$inline,
+                          width=input$width
+                        )
+                        },
+
+                        "fileInput" = list(
+                          label=input$fieldlabel,
+                          width=input$width,
+                          accept = strsplit(input$accept, "[,;]")[[1]],
+                          multiple=input$multiple,
+                          buttonLabel=input$buttonLabel,
+                          placeholder=input$placeholder,
+                          capture = input$capture   
+                        ),
+                        "actionButton" = list(
+                          label=input$fieldlabel,
+                          icon=shiny::icon(input$button_icon),
+                          width=input$width
+                        ),
+                        "actionLink" = list(
+                          label=input$fieldlabel,
+                          icon=shiny::icon(input$button_icon)
+                        ),
+                        "passwordInput" = list(
+                          label=input$fieldlabel,
+                          value=input$value,
+                          width=input$width,
+                          placeholder=input$placeholder
+                        ),
                         list()
         )
       )
-      fields(c(fields(), list(new_field)))
+      #fields(c(fields(), list(new_field)))
+      if(is.null(elementid)){
+        ind<-sum(grepl(new_field$specific_type,unlist(fields%>%map(~.x$params$specific_type))))
+        nem_id<-paste(make.names(section_name),new_field$specific_type,ind,sep="_")
+        }
+      else{
+        nem_id<-elementid
+        }
+      new_field$params$inputId<-nem_id
+      output$fields<-renderPrint({print(new_field)})
+      ship_vals(new_field)
     })
+    
+    return(ship_vals)
   })
 }
 
